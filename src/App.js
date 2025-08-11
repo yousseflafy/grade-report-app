@@ -157,7 +157,7 @@ export default function App() {
   doc.setFont("Times", "bold");
   doc.setFontSize(22);
   doc.setTextColor(0, 51, 102); // deep blue
-  doc.text(title || "Mid-Term Politics Grades Report", pageWidth / 2, 120, { align: "center" });
+  doc.text(title || "Mid-Term Politics Grades Report", "Prepared by: Youssef Lafy", pageWidth / 2, 120, { align: "center" });
 
   doc.setFont("Times", "italic");
   doc.setFontSize(12);
