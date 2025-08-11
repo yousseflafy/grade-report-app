@@ -153,72 +153,81 @@ export default function App() {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-   // === Cover Page ===
-// Background color (optional, can be removed if plain white preferred)
-doc.setFillColor(240, 248, 255); // light blue
+// === Cover Page ===
+doc.setFillColor(240, 248, 255); // light blue background
 doc.rect(0, 0, pageWidth, pageHeight, "F");
 
-// Title
 doc.setFont("Times", "bold");
 doc.setFontSize(28);
 doc.setTextColor(0, 51, 102); // deep blue
-doc.text(title || "Mid-Term Politics Grades Report", pageWidth / 2, 100, { align: "center" });
 
-// Decorative line
+// Calculate vertical start so content is centered
+let coverStartY = pageHeight / 2 - 30;
+
+// Title
+doc.text(title || "Mid-Term Politics Grades Report", pageWidth / 2, coverStartY, { align: "center" });
+
+// Decorative line under title
 doc.setDrawColor(0, 102, 204);
 doc.setLineWidth(1);
-doc.line(60, 110, pageWidth - 60, 110);
+doc.line(pageWidth / 2 - 50, coverStartY + 5, pageWidth / 2 + 50, coverStartY + 5);
 
 // Date
 doc.setFont("Times", "italic");
 doc.setFontSize(14);
 doc.setTextColor(80, 80, 80);
-doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, 140, { align: "center" });
+doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, coverStartY + 25, { align: "center" });
 
 // Prepared by
 doc.setFont("Times", "normal");
 doc.setFontSize(14);
-doc.setTextColor(80, 80, 80);
-doc.text("Prepared by: Youssef Lafy", pageWidth / 2, 160, { align: "center" });
+doc.text("Prepared by: Youssef Lafy", pageWidth / 2, coverStartY + 45, { align: "center" });
 
-// New page for tables
+// === New page for tables ===
 doc.addPage();
 
-// === Overall Summary Table ===
+// Centered "Overall Summary" heading
 doc.setFont("Times", "bold");
-doc.setFontSize(14);
+doc.setFontSize(16);
 doc.setTextColor(0, 51, 102);
-doc.text("Overall Summary", 14, 20);
+doc.text("Overall Summary", pageWidth / 2, 30, { align: "center" });
 
+// Table
 doc.autoTable({
   head: [Object.keys(overallSummary[0])],
   body: overallSummary.map(row => Object.values(row)),
-  startY: 26,
+  startY: 40,
   theme: "grid",
   headStyles: { fillColor: [0, 102, 204], textColor: 255, fontStyle: "bold" },
-  bodyStyles: { font: "Times", fontSize: 10 },
+  bodyStyles: { font: "Times", fontSize: 10, halign: "center" },
   alternateRowStyles: { fillColor: [245, 245, 245] },
+  tableWidth: "auto", // Auto-size to content
+  styles: { halign: "center" }
 });
 
 // === Group Summary Table ===
-let tableY = doc.lastAutoTable.finalY + 16;
-if (tableY > 250) {
+let tableY = doc.lastAutoTable.finalY + 20;
+if (tableY > pageHeight - 40) {
   doc.addPage();
-  tableY = 20;
+  tableY = 30;
 }
-doc.setFontSize(14);
-doc.setTextColor(0, 51, 102);
-doc.text("Group Summary", 14, tableY);
+
+doc.setFont("Times", "bold");
+doc.setFontSize(16);
+doc.text("Group Summary", pageWidth / 2, tableY, { align: "center" });
 
 doc.autoTable({
   head: [Object.keys(groupSummary[0])],
   body: groupSummary.map(row => Object.values(row)),
-  startY: tableY + 6,
+  startY: tableY + 10,
   theme: "grid",
   headStyles: { fillColor: [0, 102, 204], textColor: 255, fontStyle: "bold" },
-  bodyStyles: { font: "Times", fontSize: 10 },
+  bodyStyles: { font: "Times", fontSize: 10, halign: "center" },
   alternateRowStyles: { fillColor: [245, 245, 245] },
+  tableWidth: "auto",
+  styles: { halign: "center" }
 });
+
 
 
     const safeTitle = (title && title.trim()) ? title.replace(/\s+/g, "_") : "Mid-Term_Politics_Grades_Report";
