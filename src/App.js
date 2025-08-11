@@ -170,7 +170,6 @@ const downloadPDF = (overallSummary, groupSummary, reportTitle) => {
   doc.setFontSize(14);
   doc.setTextColor(0, 51, 102);
   doc.text("Overall Summary", 14, 40);
-
   doc.autoTable({
     startY: 45,
     head: [Object.keys(overallSummary)],
@@ -194,7 +193,6 @@ const downloadPDF = (overallSummary, groupSummary, reportTitle) => {
   doc.setFontSize(14);
   doc.setTextColor(0, 51, 102);
   doc.text("Group Summary", 14, doc.lastAutoTable.finalY + 15);
-
   doc.autoTable({
     startY: doc.lastAutoTable.finalY + 20,
     head: [Object.keys(groupSummary[0])],
@@ -214,8 +212,10 @@ const downloadPDF = (overallSummary, groupSummary, reportTitle) => {
     alternateRowStyles: { fillColor: [240, 240, 240] },
   });
 
+  // Finally, save the file
   doc.save(`${reportTitle || "grade_report"}.pdf`);
 };
+
 
   const resetAll = () => {
     // clear file input DOM value
