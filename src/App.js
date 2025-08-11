@@ -147,68 +147,78 @@ export default function App() {
   };
 
   // Download PDF (tables only) with footer
-  const downloadPDF = () => {
-    const doc = new jsPDF();
+ const downloadPDF = () => {
+  if (!overallSummary || !groupSummary) {
+    alert("Please generate a report first.");
+    return;
+  }
 
-    // Title
-    doc.setFont("Times", "bold");
-    doc.setFontSize(20);
-    doc.text("Mid-Term Politics Grades Report", doc.internal.pageSize.width / 2, 15, { align: "center" });
+  const { jsPDF } = window.jspdf;
 
-    doc.setFontSize(12);
-    doc.setFont("Times", "normal");
-    doc.text(`Prepared by: Youssef Lafy`, 14, 25);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 32);
+  const doc = new jsPDF();
 
-    let startY = 40;
+  // Title
+  doc.setFontSize(18);
+  doc.setTextColor(40, 40, 40);
+  doc.text(reportTitle || "Grade Report", 14, 20);
 
-    // Overall Summary Table
-    autoTable(doc, {
-      html: "#overallTable",
-      startY,
-      theme: "grid",
-      styles: { font: "Times", fontSize: 11, halign: "center" },
-      headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: "bold" }, // blue header
-      alternateRowStyles: { fillColor: [245, 245, 245] }, // light gray
-    });
-  // Save file
-    doc.save("grade_report.pdf");
-  };
-  
-  // Group Summary Table
-  startY = doc.lastAutoTable.finalY + 10;
-  autoTable(doc, {
-    html: "#groupTable",
-    startY,
+  // Date
+  doc.setFontSize(11);
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 28);
+
+  // Overall Summary Table
+  doc.setFontSize(14);
+  doc.setTextColor(0, 51, 102);
+  doc.text("Overall Summary", 14, 40);
+
+  doc.autoTable({
+    startY: 45,
+    head: [Object.keys(overallSummary)],
+    body: [Object.values(overallSummary)],
     theme: "grid",
-    styles: { font: "Times", fontSize: 11, halign: "center" },
-    headStyles: { fillColor: [39, 174, 96], textColor: 255, fontStyle: "bold" }, // green header
-    alternateRowStyles: { fillColor: [245, 245, 245] },
+    styles: {
+      fontSize: 11,
+      halign: "center",
+      fillColor: [245, 245, 245],
+      textColor: [40, 40, 40],
+    },
+    headStyles: {
+      fillColor: [0, 102, 204],
+      textColor: 255,
+      fontStyle: "bold",
+    },
+    alternateRowStyles: { fillColor: [240, 240, 240] },
   });
 
-    // Group summary table (on new page if needed)
-    const startY = doc.lastAutoTable.finalY + 20;
-    doc.autoTable({
-      head: [Object.keys(groupSummary[0])],
-      body: groupSummary.map(r => Object.values(r)),
-      startY: startY,
-      styles: { font: "Times", fontSize: 10 },
-      headStyles: { fillColor: [240,240,240] },
-    });
+  // Group Summary Table
+  doc.setFontSize(14);
+  doc.setTextColor(0, 51, 102);
+  doc.text("Group Summary", 14, doc.lastAutoTable.finalY + 15);
 
-    // Footer on every page
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.setTextColor(120);
-      doc.text("Prepared by Youssef Lafy", 40, pageHeight - 30);
-    }
+  doc.autoTable({
+    startY: doc.lastAutoTable.finalY + 20,
+    head: [Object.keys(groupSummary[0])],
+    body: groupSummary.map((row) => Object.values(row)),
+    theme: "grid",
+    styles: {
+      fontSize: 11,
+      halign: "center",
+      fillColor: [245, 245, 245],
+      textColor: [40, 40, 40],
+    },
+    headStyles: {
+      fillColor: [0, 102, 204],
+      textColor: 255,
+      fontStyle: "bold",
+    },
+    alternateRowStyles: { fillColor: [240, 240, 240] },
+  });
 
-    const safeTitle = (title && title.trim()) ? title.replace(/\s+/g, "_") : "Mid-Term_Politics_Grades_Report";
-    const filename = `${safeTitle}_${new Date().toISOString().slice(0,10)}.pdf`;
-    doc.save(filename);
-  };
+  // Save PDF
+  doc.save(`${reportTitle || "grade_report"}.pdf`);
+};
+
 
   const resetAll = () => {
     // clear file input DOM value
