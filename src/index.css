@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* small additional spacing helpers */
+body {
+  background-color: #f7fafc;
+}
+
