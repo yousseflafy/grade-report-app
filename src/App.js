@@ -170,8 +170,11 @@ export default function App() {
       styles: { font: "Times", fontSize: 11, halign: "center" },
       headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: "bold" }, // blue header
       alternateRowStyles: { fillColor: [245, 245, 245] }, // light gray
-  });
-
+    });
+  // Save file
+    doc.save("grade_report.pdf");
+  };
+  
   // Group Summary Table
   startY = doc.lastAutoTable.finalY + 10;
   autoTable(doc, {
