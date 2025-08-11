@@ -4,6 +4,46 @@ import Plot from "react-plotly.js";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
+// downloadPDF function — standalone
+function downloadPDF(overallSummary, groupSummary, reportTitle = "") {
+  if (!overallSummary.length || !groupSummary.length) {
+    alert("Please generate a report first.");
+    return;
+  }
+
+  const doc = new jsPDF();
+  doc.setFontSize(18)
+     .text(reportTitle || "Grade Report", doc.internal.pageSize.getWidth() / 2, 20, { align: "center" });
+  doc.setFontSize(12)
+     .text(`Date: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.getWidth() / 2, 28, { align: "center" });
+
+  // Overall summary
+  doc.setFontSize(14)
+     .text("Overall Summary", 14, 40);
+  doc.autoTable({
+    startY: 46,
+    head: [Object.keys(overallSummary[0])],
+    body: overallSummary.map(row => Object.values(row)),
+    theme: "grid",
+    headStyles: { fillColor: [0, 102, 204], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [240, 240, 240] }
+  });
+
+  // Group summary
+  doc.setFontSize(14)
+     .text("Group Summary", 14, doc.lastAutoTable.finalY + 20);
+  doc.autoTable({
+    startY: doc.lastAutoTable.finalY + 24,
+    head: [Object.keys(groupSummary[0])],
+    body: groupSummary.map(row => Object.values(row)),
+    theme: "grid",
+    headStyles: { fillColor: [0, 102, 204], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [240, 240, 240] }
+  });
+
+  doc.save(`${(reportTitle || "grade_report").replace(/\s+/g, "_")}.pdf`);
+}
+
 function parseNumber(x) {
   if (x === null || x === undefined) return NaN;
   if (typeof x === "number") return x;
@@ -146,76 +186,7 @@ export default function App() {
     }, 200);
   };
 
-  // Download PDF (tables only) with footer
-const downloadPDF = (overallSummary, groupSummary, reportTitle) => {
-  if (!overallSummary || !groupSummary) {
-    alert("Please generate a report first.");
-    return;
-  }
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  // Title
-  doc.setFontSize(18);
-  doc.setTextColor(40, 40, 40);
-  doc.text(reportTitle || "Grade Report", 14, 20);
-
-  // Date
-  doc.setFontSize(11);
-  doc.setTextColor(100, 100, 100);
-  doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 28);
-
-  // Overall Summary Table
-  doc.setFontSize(14);
-  doc.setTextColor(0, 51, 102);
-  doc.text("Overall Summary", 14, 40);
-  doc.autoTable({
-    startY: 45,
-    head: [Object.keys(overallSummary)],
-    body: [Object.values(overallSummary)],
-    theme: "grid",
-    styles: {
-      fontSize: 11,
-      halign: "center",
-      fillColor: [245, 245, 245],
-      textColor: [40, 40, 40],
-    },
-    headStyles: {
-      fillColor: [0, 102, 204],
-      textColor: 255,
-      fontStyle: "bold",
-    },
-    alternateRowStyles: { fillColor: [240, 240, 240] },
-  });
-
-  // Group Summary Table
-  doc.setFontSize(14);
-  doc.setTextColor(0, 51, 102);
-  doc.text("Group Summary", 14, doc.lastAutoTable.finalY + 15);
-  doc.autoTable({
-    startY: doc.lastAutoTable.finalY + 20,
-    head: [Object.keys(groupSummary[0])],
-    body: groupSummary.map((row) => Object.values(row)),
-    theme: "grid",
-    styles: {
-      fontSize: 11,
-      halign: "center",
-      fillColor: [245, 245, 245],
-      textColor: [40, 40, 40],
-    },
-    headStyles: {
-      fillColor: [0, 102, 204],
-      textColor: 255,
-      fontStyle: "bold",
-    },
-    alternateRowStyles: { fillColor: [240, 240, 240] },
-  });
-
-  // Finally, save the file
-  doc.save(`${reportTitle || "grade_report"}.pdf`);
-};
-
+ 
 
   const resetAll = () => {
     // clear file input DOM value
@@ -286,7 +257,13 @@ const downloadPDF = (overallSummary, groupSummary, reportTitle) => {
 
           <div className="flex flex-col gap-3 items-stretch">
             <button onClick={generateReport} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Generate Report</button>
-            <button onClick={downloadPDF} disabled={!reportGenerated} className={`w-full py-2 rounded ${reportGenerated ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-300 text-gray-600 cursor-not-allowed"}`}>Download PDF</button>
+           <button
+  onClick={() => downloadPDF(overallSummary, groupSummary, title)}
+  disabled={!reportGenerated}
+  className={`...`} // keep your existing Tailwind or class styles here
+>
+  Download PDF
+</button>
             <button onClick={resetAll} className="w-full bg-gray-600 text-white py-2 rounded hover:bg-gray-700">Reset</button>
           </div>
         </div>
