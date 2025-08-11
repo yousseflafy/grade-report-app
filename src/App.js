@@ -147,14 +147,13 @@ export default function App() {
   };
 
   // Download PDF (tables only) with footer
- const downloadPDF = () => {
+const downloadPDF = (overallSummary, groupSummary, reportTitle) => {
   if (!overallSummary || !groupSummary) {
     alert("Please generate a report first.");
     return;
   }
 
   const { jsPDF } = window.jspdf;
-
   const doc = new jsPDF();
 
   // Title
@@ -215,10 +214,8 @@ export default function App() {
     alternateRowStyles: { fillColor: [240, 240, 240] },
   });
 
-  // Save PDF
   doc.save(`${reportTitle || "grade_report"}.pdf`);
 };
-
 
   const resetAll = () => {
     // clear file input DOM value
