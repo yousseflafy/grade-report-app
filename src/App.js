@@ -148,33 +148,40 @@ export default function App() {
 
   // Download PDF (tables only) with footer
   const downloadPDF = () => {
-    if (!reportGenerated) return alert("Generate report first.");
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
+    const doc = new jsPDF();
 
-    // Cover page
+    // Title
     doc.setFont("Times", "bold");
     doc.setFontSize(20);
-    doc.text(title || "Mid-Term Politics Grades Report", pageWidth / 2, 120, { align: "center" });
-    doc.setFont("Times", "normal");
+    doc.text("Mid-Term Politics Grades Report", doc.internal.pageSize.width / 2, 15, { align: "center" });
+
     doc.setFontSize(12);
-    doc.text("Prepared by: Youssef Lafy", pageWidth / 2, 150, { align: "center" });
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, 170, { align: "center" });
+    doc.setFont("Times", "normal");
+    doc.text(`Prepared by: Youssef Lafy`, 14, 25);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 32);
 
-    // Add page for tables
-    doc.addPage();
+    let startY = 40;
 
-    // Overall summary table
-    const overallHead = [Object.keys(overallSummary[0])];
-    const overallBody = overallSummary.map(r => Object.values(r));
-    doc.autoTable({
-      head: overallHead,
-      body: overallBody,
-      startY: 30,
-      styles: { font: "Times", fontSize: 10 },
-      headStyles: { fillColor: [240,240,240] },
-    });
+    // Overall Summary Table
+    autoTable(doc, {
+      html: "#overallTable",
+      startY,
+      theme: "grid",
+      styles: { font: "Times", fontSize: 11, halign: "center" },
+      headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: "bold" }, // blue header
+      alternateRowStyles: { fillColor: [245, 245, 245] }, // light gray
+  });
+
+  // Group Summary Table
+  startY = doc.lastAutoTable.finalY + 10;
+  autoTable(doc, {
+    html: "#groupTable",
+    startY,
+    theme: "grid",
+    styles: { font: "Times", fontSize: 11, halign: "center" },
+    headStyles: { fillColor: [39, 174, 96], textColor: 255, fontStyle: "bold" }, // green header
+    alternateRowStyles: { fillColor: [245, 245, 245] },
+  });
 
     // Group summary table (on new page if needed)
     const startY = doc.lastAutoTable.finalY + 20;
