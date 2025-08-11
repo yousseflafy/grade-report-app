@@ -4,46 +4,6 @@ import Plot from "react-plotly.js";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-// downloadPDF function — standalone
-function downloadPDF(overallSummary, groupSummary, reportTitle = "") {
-  if (!overallSummary.length || !groupSummary.length) {
-    alert("Please generate a report first.");
-    return;
-  }
-
-  const doc = new jsPDF();
-  doc.setFontSize(18)
-     .text(reportTitle || "Grade Report", doc.internal.pageSize.getWidth() / 2, 20, { align: "center" });
-  doc.setFontSize(12)
-     .text(`Date: ${new Date().toLocaleDateString()}`, doc.internal.pageSize.getWidth() / 2, 28, { align: "center" });
-
-  // Overall summary
-  doc.setFontSize(14)
-     .text("Overall Summary", 14, 40);
-  doc.autoTable({
-    startY: 46,
-    head: [Object.keys(overallSummary[0])],
-    body: overallSummary.map(row => Object.values(row)),
-    theme: "grid",
-    headStyles: { fillColor: [0, 102, 204], textColor: 255, fontStyle: "bold" },
-    alternateRowStyles: { fillColor: [240, 240, 240] }
-  });
-
-  // Group summary
-  doc.setFontSize(14)
-     .text("Group Summary", 14, doc.lastAutoTable.finalY + 20);
-  doc.autoTable({
-    startY: doc.lastAutoTable.finalY + 24,
-    head: [Object.keys(groupSummary[0])],
-    body: groupSummary.map(row => Object.values(row)),
-    theme: "grid",
-    headStyles: { fillColor: [0, 102, 204], textColor: 255, fontStyle: "bold" },
-    alternateRowStyles: { fillColor: [240, 240, 240] }
-  });
-
-  doc.save(`${(reportTitle || "grade_report").replace(/\s+/g, "_")}.pdf`);
-}
-
 function parseNumber(x) {
   if (x === null || x === undefined) return NaN;
   if (typeof x === "number") return x;
@@ -186,7 +146,59 @@ export default function App() {
     }, 200);
   };
 
- 
+  // Download PDF (tables only) with footer
+  const downloadPDF = () => {
+    if (!reportGenerated) return alert("Generate report first.");
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // Cover page
+    doc.setFont("Times", "bold");
+    doc.setFontSize(20);
+    doc.text(title || "Mid-Term Politics Grades Report", pageWidth / 2, 120, { align: "center" });
+    doc.setFont("Times", "normal");
+    doc.setFontSize(12);
+    doc.text("Prepared by: Youssef Lafy", pageWidth / 2, 150, { align: "center" });
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth / 2, 170, { align: "center" });
+
+    // Add page for tables
+    doc.addPage();
+
+    // Overall summary table
+    const overallHead = [Object.keys(overallSummary[0])];
+    const overallBody = overallSummary.map(r => Object.values(r));
+    doc.autoTable({
+      head: overallHead,
+      body: overallBody,
+      startY: 30,
+      styles: { font: "Times", fontSize: 10 },
+      headStyles: { fillColor: [240,240,240] },
+    });
+
+    // Group summary table (on new page if needed)
+    const startY = doc.lastAutoTable.finalY + 20;
+    doc.autoTable({
+      head: [Object.keys(groupSummary[0])],
+      body: groupSummary.map(r => Object.values(r)),
+      startY: startY,
+      styles: { font: "Times", fontSize: 10 },
+      headStyles: { fillColor: [240,240,240] },
+    });
+
+    // Footer on every page
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(10);
+      doc.setTextColor(120);
+      doc.text("Prepared by Youssef Lafy", 40, pageHeight - 30);
+    }
+
+    const safeTitle = (title && title.trim()) ? title.replace(/\s+/g, "_") : "Mid-Term_Politics_Grades_Report";
+    const filename = `${safeTitle}_${new Date().toISOString().slice(0,10)}.pdf`;
+    doc.save(filename);
+  };
 
   const resetAll = () => {
     // clear file input DOM value
@@ -257,13 +269,7 @@ export default function App() {
 
           <div className="flex flex-col gap-3 items-stretch">
             <button onClick={generateReport} className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Generate Report</button>
-           <button
-  onClick={() => downloadPDF(overallSummary, groupSummary, title)}
-  disabled={!reportGenerated}
-  className={`...`} // keep your existing Tailwind or class styles here
->
-  Download PDF
-</button>
+            <button onClick={downloadPDF} disabled={!reportGenerated} className={`w-full py-2 rounded ${reportGenerated ? "bg-green-600 text-white hover:bg-green-700" : "bg-gray-300 text-gray-600 cursor-not-allowed"}`}>Download PDF</button>
             <button onClick={resetAll} className="w-full bg-gray-600 text-white py-2 rounded hover:bg-gray-700">Reset</button>
           </div>
         </div>
