@@ -23,7 +23,7 @@ export default function App() {
   const [title, setTitle] = useState("");
   const [passing, setPassing] = useState(40);
   const [distinction, setDistinction] = useState(70);
-  const [meritThreshold, setMeritThreshold] = useState(60); // New state for merit threshold
+  const [meritThreshold, setMeritThreshold] = useState(60);
   const [overallSummary, setOverallSummary] = useState([]);
   const [groupSummary, setGroupSummary] = useState([]);
   const [reportGenerated, setReportGenerated] = useState(false);
@@ -98,19 +98,23 @@ export default function App() {
 
     const passCount = rows.filter(r => r.grade >= passing).length;
     const distCount = rows.filter(r => r.grade >= distinction).length;
-    // New: calculate merit count
     const meritCount = rows.filter(r => r.grade >= meritThreshold && r.grade < distinction).length;
     const grades = rows.map(r => r.grade);
     const mean = grades.reduce((a,b) => a+b, 0) / grades.length;
     const sd = Math.sqrt(grades.reduce((a,b) => a + Math.pow(b - mean, 2), 0) / grades.length);
+    
+    // Calculate the new pass rate
+    const simplePassCount = passCount - (meritCount + distCount);
+    const simplePassRate = ((simplePassCount / N) * 100).toFixed(1);
 
     setOverallSummary([{
       N,
-      "Passed": passCount, // New: Number of passing students
-      "Failed": N - passCount, // New: Number of failing students
-      "Overall Passing Rate (%)": ((passCount / N) * 100).toFixed(1),
-      "Merit Rate (%)": ((meritCount / N) * 100).toFixed(1), // New: Merit rate
-      "Distinction Rate (%)": ((distCount / N) * 100).toFixed(1),
+      "Passed": passCount,
+      "Failed": N - passCount,
+      "Overall Passing Rate %": ((passCount / N) * 100).toFixed(1),
+      "Pass Rate %": simplePassRate, // New column
+      "Merit Rate %": ((meritCount / N) * 100).toFixed(1),
+      "Distinction Rate %": ((distCount / N) * 100).toFixed(1),
       Mean: mean.toFixed(2),
       SD: sd.toFixed(2),
       Max: Math.max(...grades),
@@ -129,17 +133,22 @@ export default function App() {
       const n = arr.length;
       const pass = arr.filter(x => x >= passing).length;
       const d = arr.filter(x => x >= distinction).length;
-      // New: calculate merit count for each group
       const mCount = arr.filter(x => x >= meritThreshold && x < distinction).length;
       const m = arr.reduce((a,b) => a+b, 0) / n;
       const s = Math.sqrt(arr.reduce((a,b) => a + Math.pow(b - m, 2), 0) / n);
+      
+      // Calculate the new pass rate for each group
+      const groupSimplePassCount = pass - (mCount + d);
+      const groupSimplePassRate = ((groupSimplePassCount / n) * 100).toFixed(1);
+
       return {
         Group: g,
         N: n,
-        "Passed": pass, // New: Number of passing students in the group
-        "Failed": n - pass, // New: Number of failing students in the group
-        "OverallPassing Rate (%)": ((pass / n) * 100).toFixed(1),
-        "Merit Rate (%)": ((mCount / n) * 100).toFixed(1), // New: Merit rate for the group
+        "Passed": pass,
+        "Failed": n - pass,
+        "Overall Passing Rate %": ((pass / n) * 100).toFixed(1),
+        "Pass Rate %": groupSimplePassRate, // New column
+        "Merit Rate %": ((mCount / n) * 100).toFixed(1),
         "Distinction Rate (%)": ((d / n) * 100).toFixed(1),
         Mean: m.toFixed(2),
         SD: s.toFixed(2),
@@ -258,7 +267,7 @@ doc.autoTable({
     setTitle("");
     setPassing(40);
     setDistinction(70);
-    setMeritThreshold(60); // New: reset merit threshold
+    setMeritThreshold(60);
     setOverallSummary([]);
     setGroupSummary([]);
     setReportGenerated(false);
