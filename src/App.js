@@ -149,7 +149,7 @@ export default function App() {
         "Overall Passing Rate %": ((pass / n) * 100).toFixed(1),
         "Pass Rate %": groupSimplePassRate, // New column
         "Merit Rate %": ((mCount / n) * 100).toFixed(1),
-        "Distinction Rate (%)": ((d / n) * 100).toFixed(1),
+        "Distinction Rate %": ((d / n) * 100).toFixed(1),
         Mean: m.toFixed(2),
         SD: s.toFixed(2),
         Max: Math.max(...arr),
